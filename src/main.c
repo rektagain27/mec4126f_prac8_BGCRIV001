@@ -1,8 +1,8 @@
 // Written by: Rivoo Bagchi BGCRIV001
-// Date created:
+// Date created: 30/04/2024
 // Programmed in: STM32CubeIDE
 // Target: STM32F051
-// Description:
+// Description: MEC4126F
 
 // DEFINES AND INCLUDES
 #define STM32F051
@@ -23,6 +23,7 @@ struct robot_status{
 void ResetClockTo48Mhz(void);
 void main(void);
 void init_TIM3(void);
+void init_TIM14 (void);
 
 // MAIN FUNCTION
 void main(void)
@@ -81,6 +82,15 @@ void init_TIM3(void) {
     TIM3->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E | TIM_CCER_CC4E;
     TIM3->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC2P | TIM_CCER_CC3P | TIM_CCER_CC4P);
     TIM3->CR1 |= TIM_CR1_CEN;
+}
+
+void init_TIM14 (void) {
+	RCC -> APB1ENR |= RCC_APB1ENR_TIM14EN;
+	TIM14 -> ARR = 73;
+	TIM14 -> PSC = 64864;
+	TIM14 -> DIER |= TIM_DIER_UIE;
+	TIM14 -> CR1 |=TIM_CR1_CEN;
+	NVIC_EnableIRQ(TIM14_IRQn);
 }
 
 // INTERRUPT HANDLERS --------------------------------------------------------|
