@@ -99,6 +99,7 @@ void init_TIM14 (void) {
 	TIM14 -> DIER |= TIM_DIER_UIE;
 	TIM14 -> CR1 |=TIM_CR1_CEN;
 	NVIC_EnableIRQ(TIM14_IRQn);
+
 }
 
 // INTERRUPT HANDLERS --------------------------------------------------------|
