@@ -24,6 +24,9 @@ void ResetClockTo48Mhz(void);
 void main(void);
 void init_TIM3(void);
 void init_TIM14 (void);
+void TIM14_IRQHandler(void);
+void sensor_polling(void);
+
 
 // MAIN FUNCTION
 void main(void)
@@ -34,6 +37,8 @@ void main(void)
 	robot_state.movement = stop;
 	robot_state.ir_left = LOW;
 	robot_state.ir_right = LOW;
+  	init_TIM3();
+  	init_TIM14();
   	while(1)
 	{
 
@@ -100,6 +105,41 @@ void init_TIM14 (void) {
 	TIM14 -> CR1 |=TIM_CR1_CEN;
 	NVIC_EnableIRQ(TIM14_IRQn);
 
+}
+
+void sensor_polling(void){
+	robot_state.ir_left = GPIOA -> IDR & GPIO_IDR_0;
+	robot_state.ir_right = GPIOA -> IDR & GPIO_IDR_1;
+}
+
+void TIM14_IRQHandler(void){
+	TIM14 -> SR &= ~TIM_SR_UIF;
+	sensor_polling();
+
+    if (robot_state.ir_left && robot_state.ir_right ) {
+        duty_cycle_pb4 = 0;
+        duty_cycle_pb0 = 0;
+    } else if (robot_state.ir_left && !(robot_state.ir_right))
+	{
+        duty_cycle_pb4 = 70;
+        duty_cycle_pb0 = 100-70;
+    }
+    	else if (!(robot_state.ir_left) && (robot_state.ir_right)) {
+    		duty_cycle_pb4 = 100-70;
+    		duty_cycle_pb0 = 70;
+    }
+    	else if (!(robot_state.ir_left) && !(robot_state.ir_right)){
+            duty_cycle_pb4 = 70;
+            duty_cycle_pb0 = 70;
+    }
+
+
+    TIM3->CCR1 = duty_cycle_pb4;
+    TIM3->CCR3 = duty_cycle_pb0;
+
+
+    TIM3->CCR2 = duty_cycle_pb4;
+    TIM3->CCR4 = duty_cycle_pb0;
 }
 
 // INTERRUPT HANDLERS --------------------------------------------------------|
